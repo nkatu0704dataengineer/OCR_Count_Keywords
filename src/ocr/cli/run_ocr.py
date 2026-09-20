@@ -46,6 +46,8 @@ def main():
                         help="Resume processing by skipping pages cached in .cache/")
     parser.add_argument("--debug", action="store_true",
                         help="Enable verbose debug logging")
+    parser.add_argument("--keywords-file", type=str, default=None,
+                        help="Path to keywords text file (default: config/keywords.txt)")
 
     args = parser.parse_args()
 
@@ -70,7 +72,8 @@ def main():
             resume=args.resume,
             benchmark=args.benchmark,
             accuracy_report=args.accuracy_report,
-            ground_truth_dir=args.ground_truth
+            ground_truth_dir=args.ground_truth,
+            keywords_file=args.keywords_file
         )
 
         print("=" * 60)

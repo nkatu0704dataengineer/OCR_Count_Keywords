@@ -24,13 +24,15 @@ class BatchOCRRunner:
         output_dir: str = "output",
         profile: str = "balanced",
         ground_truth_dir: str = "benchmark/ground_truth",
-        max_retries: int = 2
+        max_retries: int = 2,
+        keywords_file: Optional[str] = None
     ):
         self.input_dir = Path(input_dir).resolve()
         self.output_dir = Path(output_dir).resolve()
         self.profile = profile
         self.ground_truth_dir = Path(ground_truth_dir).resolve()
         self.max_retries = max_retries
+        self.keywords_file = keywords_file
 
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.manifest_path = self.output_dir / "batch_manifest.json"
@@ -264,7 +266,8 @@ class BatchOCRRunner:
                         resume=True,
                         benchmark=True,
                         accuracy_report=has_gt,
-                        ground_truth_dir=str(self.ground_truth_dir)
+                        ground_truth_dir=str(self.ground_truth_dir),
+                        keywords_file=self.keywords_file
                     )
 
                     file_dur = time.time() - file_t0
@@ -558,9 +561,12 @@ def main():
     parser.add_argument("--output", default="output", help="Output directory")
     parser.add_argument("--profile", default="balanced", help="Profile (default: balanced)")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of files for testing")
+    parser.add_argument("--keywords-file", type=str, default=None,
+                        help="Path to keywords text file (default: config/keywords.txt)")
     args = parser.parse_args()
 
-    runner = BatchOCRRunner(input_dir=args.input, output_dir=args.output, profile=args.profile)
+    runner = BatchOCRRunner(input_dir=args.input, output_dir=args.output, profile=args.profile,
+                            keywords_file=args.keywords_file)
     runner.execute_batch(limit=args.limit)
 
 if __name__ == "__main__":

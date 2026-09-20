@@ -13,6 +13,7 @@ from src.ocr.application.process_page import ProcessPageUseCase
 from src.ocr.application.export_document import ExportDocumentUseCase
 from src.ocr.infrastructure.cache.artifact_cache import ArtifactCache
 from src.ocr.infrastructure.export.manifest_exporter import ManifestExporter
+from src.ocr.application.count_keywords import CountKeywordsUseCase
 
 class ConvertDocumentUseCase:
     """
@@ -46,7 +47,8 @@ class ConvertDocumentUseCase:
         resume: bool = False,
         benchmark: bool = False,
         accuracy_report: bool = False,
-        ground_truth_dir: str = "benchmark/ground_truth"
+        ground_truth_dir: str = "benchmark/ground_truth",
+        keywords_file: Optional[str] = None
     ) -> ExtractedDocument:
         t0 = time.time()
         pdf_path = Path(file_path).resolve()
@@ -186,5 +188,15 @@ class ConvertDocumentUseCase:
                         json.dump(extracted_doc.quality.model_dump(mode="json"), f, ensure_ascii=False, indent=2)
                 except Exception as e:
                     print(f"[WARN] Accuracy evaluation failed: {e}")
+
+        # Keyword counting (runs after result.md has been written)
+        try:
+            CountKeywordsUseCase.execute(
+                doc_dir=doc_dir,
+                document_id=doc_id,
+                keywords_file=keywords_file,
+            )
+        except Exception as e:
+            print(f"[WARN] Keyword counting failed: {e}")
 
         return extracted_doc
